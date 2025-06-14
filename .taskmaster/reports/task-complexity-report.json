@@ -1,0 +1,109 @@
+{
+  "meta": {
+    "generatedAt": "2025-06-13T12:29:15.233Z",
+    "tasksAnalyzed": 12,
+    "totalTasks": 12,
+    "analysisCount": 12,
+    "thresholdScore": 5,
+    "projectName": "Taskmaster",
+    "usedResearch": true
+  },
+  "complexityAnalysis": [
+    {
+      "taskId": 1,
+      "taskTitle": "Setup Project Repository",
+      "complexityScore": 6,
+      "recommendedSubtasks": 2,
+      "expansionPrompt": "Configure Tauri's command system and Rust backend.",
+      "reasoning": "Task involves multiple steps, including generating project structure and installing dependencies."
+    },
+    {
+      "taskId": 2,
+      "taskTitle": "Frontend Framework Setup",
+      "complexityScore": 7,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Configure Tailwind CSS for styling.",
+      "reasoning": "Task involves multiple steps, including setting up React and installing dependencies."
+    },
+    {
+      "taskId": 3,
+      "taskTitle": "Rust Backend Setup",
+      "complexityScore": 7,
+      "recommendedSubtasks": 2,
+      "expansionPrompt": "Configure Tauri's command system and Rust backend.",
+      "reasoning": "Task involves multiple steps, including setting up Rust and installing dependencies."
+    },
+    {
+      "taskId": 4,
+      "taskTitle": "File System Access",
+      "complexityScore": 8,
+      "recommendedSubtasks": 2,
+      "expansionPrompt": "Implement a function to scan for audio files and import metadata (tags).",
+      "reasoning": "Task involves complex file system interactions and data parsing."
+    },
+    {
+      "taskId": 5,
+      "taskTitle": "Metadata Parsing",
+      "complexityScore": 8,
+      "recommendedSubtasks": 2,
+      "expansionPrompt": "Use a library like `taglib` to parse audio file tags.",
+      "reasoning": "Task involves complex data parsing and metadata extraction."
+    },
+    {
+      "taskId": 6,
+      "taskTitle": "Playlist Management",
+      "complexityScore": 9,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Implement functions to add tracks, remove tracks, and reorder tracks within a playlist.",
+      "reasoning": "Task involves complex data structures and algorithms for managing playlists."
+    },
+    {
+      "taskId": 7,
+      "taskTitle": "Library Management",
+      "complexityScore": 9,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Implement functions to add tracks, remove tracks, and reorder tracks within a library.",
+      "reasoning": "Task involves complex data structures and algorithms for managing libraries."
+    },
+    {
+      "taskId": 8,
+      "taskTitle": "Responsive Design",
+      "complexityScore": 7,
+      "recommendedSubtasks": 2,
+      "expansionPrompt": "Use a library like `react-responsive-design` to configure responsive design.",
+      "reasoning": "Task involves multiple steps, including setting up responsive design and handling window size changes."
+    },
+    {
+      "taskId": 9,
+      "taskTitle": "Dark Mode/Theme Toggle",
+      "complexityScore": 6,
+      "recommendedSubtasks": 2,
+      "expansionPrompt": "Implement a function to toggle the theme.",
+      "reasoning": "Task involves multiple steps, including setting up theme toggling and styling."
+    },
+    {
+      "taskId": 10,
+      "taskTitle": "Smooth Animations & Transitions",
+      "complexityScore": 7,
+      "recommendedSubtasks": 2,
+      "expansionPrompt": "Use a library like `react-transition-group` to configure animations and transitions.",
+      "reasoning": "Task involves multiple steps, including setting up animations and transitions."
+    },
+    {
+      "taskId": 11,
+      "taskTitle": "Native Desktop Notifications",
+      "complexityScore": 6,
+      "recommendedSubtasks": 2,
+      "expansionPrompt": "Use a library like `react-notifications` to configure notifications.",
+      "reasoning": "Task involves multiple steps, including setting up notification handling and styling."
+    },
+    {
+      "taskId": 12,
+      "taskTitle": "Native Desktop Notifications",
+      "complexityScore": 5,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down this task with a focus on native desktop notifications.",
+      "reasoning": "Automatically added due to missing analysis in AI response."
+    }
+  ]
+}

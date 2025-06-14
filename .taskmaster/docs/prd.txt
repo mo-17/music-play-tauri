@@ -1,0 +1,66 @@
+# Product Requirements Document: Cross-Platform Music Player
+
+## 1. Overview
+This document outlines the requirements for a new cross-platform music player application. The application will be built using modern web technologies and packaged for desktop use across Windows, macOS, and Linux. The primary goal is to provide a beautiful, fast, and user-friendly experience for listening to local music files.
+
+## 2. Target Audience
+- Users with local music libraries (MP3, FLAC, WAV, etc.).
+- Individuals who prefer a native desktop application over web-based streaming services.
+- Users who value privacy and want to manage their own music collection.
+
+## 3. Key Features
+
+### 3.1. Core Music Playback
+- Play, pause, skip forward, and skip backward controls.
+- Volume control and mute functionality.
+- Progress bar with seeking capability.
+- Display of current track information: title, artist, album, and album art.
+- Support for common audio formats (MP3, FLAC, WAV, AAC, OGG).
+
+### 3.2. Library Management
+- Users can add one or more folders to their music library.
+- The application will scan the specified folders for audio files and import metadata (tags).
+- The library view should display all tracks, with options to sort by title, artist, album, or date added.
+- Ability to search the library in real-time.
+- Album art display in the library.
+
+### 3.3. Playlist Management
+- Create, rename, and delete playlists.
+- Add tracks from the library to any playlist.
+- Remove tracks from a playlist.
+- View tracks within a playlist.
+- Reorder tracks within a playlist via drag-and-drop.
+
+### 3.4. User Interface & Experience
+- A clean, modern, and intuitive user interface.
+- A dark mode/light mode theme toggle.
+- Responsive design that works well across different window sizes.
+- Smooth animations and transitions.
+- Native desktop notifications for track changes (optional).
+
+## 4. Technical Stack
+- **Frontend Framework:** React
+- **Styling:** Tailwind CSS
+- **Application Framework:** Tauri (v2)
+- **Backend/Core Logic:** Rust
+
+## 5. Architecture
+- The user interface will be built as a single-page application (SPA) using React.
+- State management will be handled with a suitable React library (e.g., Zustand or Redux Toolkit).
+- All core application logic, including file system access, music file scanning, metadata parsing, and playlist management, will be implemented in Rust.
+- Tauri will be used to create the desktop application, bridging the React frontend with the Rust backend.
+- Communication between the frontend and backend will be done through Tauri's command system. Rust functions will be exposed as commands that can be called from the JavaScript frontend.
+
+## 6. Non-Functional Requirements
+- **Performance:** The application must be fast and responsive, even with large music libraries. Rust backend should handle heavy lifting efficiently.
+- **Cross-Platform Compatibility:** The application must build and run correctly on Windows, macOS, and Linux.
+- **Security:** Follow Tauri's security best practices to prevent vulnerabilities.
+- **Data Persistence:** Playlists and library metadata should be stored locally on the user's machine (e.g., in a SQLite database or JSON files).
+
+## 7. Future Enhancements (Out of Scope for v1)
+- Integration with online music services (e.g., Last.fm scrobbling).
+- Audio visualizer.
+- Equalizer settings.
+- Support for more audio formats.
+- Tag editor for music files.
+- Smart playlists based on rules.
