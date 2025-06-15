@@ -116,3 +116,85 @@ button {
     background-color: #0f0f0f69;
   }
 }
+
+/* VideoPlayer 样式 */
+.slider {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.slider::-webkit-slider-track {
+  background: rgba(255, 255, 255, 0.3);
+  height: 4px;
+  border-radius: 2px;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  background: #3b82f6;
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.slider::-webkit-slider-thumb:hover {
+  background: #60a5fa;
+  transform: scale(1.1);
+}
+
+.slider::-moz-range-track {
+  background: rgba(255, 255, 255, 0.3);
+  height: 4px;
+  border-radius: 2px;
+  border: none;
+}
+
+.slider::-moz-range-thumb {
+  background: #3b82f6;
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.slider::-moz-range-thumb:hover {
+  background: #60a5fa;
+  transform: scale(1.1);
+}
+
+/* 视频播放器全屏样式 */
+.video-player-fullscreen {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 9999 !important;
+  background: black !important;
+}
+
+/* 视频控制栏动画 */
+.video-controls {
+  transition: opacity 0.3s ease-in-out;
+}
+
+.video-controls:hover {
+  opacity: 1 !important;
+}
+
+/* 视频播放器按钮悬停效果 */
+.video-control-button {
+  transition: all 0.2s ease;
+}
+
+.video-control-button:hover {
+  transform: scale(1.05);
+  color: #60a5fa;
+}

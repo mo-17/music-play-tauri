@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-dialog';
-import { FolderOpen, Music, Loader2, AlertCircle } from 'lucide-react';
+import { FolderOpen, Music, Video, Loader2, AlertCircle } from 'lucide-react';
 import { LoadingSpinner, FadeIn } from './AnimatedComponents';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -24,10 +24,11 @@ interface LibraryTrack {
 }
 
 interface FileBrowserProps {
-  onScanComplete?: (tracks: LibraryTrack[]) => void;
+  onScanComplete?: (tracks: LibraryTrack[] | string[]) => void;
+  mediaType?: 'audio' | 'video';
 }
 
-const FileBrowser: React.FC<FileBrowserProps> = ({ onScanComplete }) => {
+const FileBrowser: React.FC<FileBrowserProps> = ({ onScanComplete, mediaType = 'audio' }) => {
   const { actualTheme } = useTheme();
   const [isScanning, setIsScanning] = useState(false);
   const [scannedFiles, setScannedFiles] = useState<string[]>([]);
@@ -37,12 +38,16 @@ const FileBrowser: React.FC<FileBrowserProps> = ({ onScanComplete }) => {
   const [selectedFolder, setSelectedFolder] = useState<string>('');
   const [scanProgress, setScanProgress] = useState<{ current: number; total: number }>({ current: 0, total: 0 });
 
+  const isVideoMode = mediaType === 'video';
+  const mediaLabel = isVideoMode ? '视频' : '音乐';
+  const MediaIcon = isVideoMode ? Video : Music;
+
   const selectFolder = async () => {
     try {
       const selected = await open({
         directory: true,
         multiple: false,
-        title: '选择音乐文件夹',
+        title: `选择${mediaLabel}文件夹`,
       });
 
       if (selected) {
@@ -68,71 +73,86 @@ const FileBrowser: React.FC<FileBrowserProps> = ({ onScanComplete }) => {
     setScanProgress({ current: 0, total: 0 });
 
     try {
-      // 调用 Tauri 后端的 scan_music_files 命令
-      const files: string[] = await invoke('scan_music_files', {
-        path: selectedFolder,
-      });
+      if (isVideoMode) {
+        // 视频文件扫描 - 调用Rust后端的视频扫描功能
+        const videoScanResult: any = await invoke('scan_video_files', {
+          paths: [selectedFolder]
+        });
+        console.log('视频扫描结果:', videoScanResult);
+        
+        // 传递视频文件列表给回调函数
+        if (videoScanResult && videoScanResult.videos) {
+          onScanComplete?.(videoScanResult.videos);
+        } else {
+          onScanComplete?.([]);
+        }
+      } else {
+        // 音频文件扫描 - 原有逻辑
+        const files: string[] = await invoke('scan_music_files', {
+          path: selectedFolder,
+        });
 
-      setScannedFiles(files);
-      setScanProgress({ current: 0, total: files.length });
+        setScannedFiles(files);
+        setScanProgress({ current: 0, total: files.length });
 
-      if (files.length > 0) {
-        // 获取文件的元数据
-        try {
-          const tracksData: Track[] = await invoke('get_metadata_for_files', {
-            files: files,
-          });
-
-          setTracks(tracksData);
-          
-          // 检查是否有文件处理失败（duration为0可能表示处理失败）
-          const failedFiles = tracksData.filter(track => 
-            track.duration === 0 && 
-            track.artist === 'Unknown Artist'
-          );
-          
-          if (failedFiles.length > 0) {
-            setWarnings(failedFiles.map(track => 
-              `文件 ${track.path.split('/').pop()} 可能已损坏或格式不支持`
-            ));
-          }
-
-          // 调用回调函数，传递扫描到的曲目
-          const libraryTracks = tracksData.map(track => ({
-            title: track.title || track.path.split('/').pop() || 'Unknown',
-            artist: track.artist || 'Unknown Artist',
-            album: track.album || 'Unknown Album',
-            duration: track.duration,
-            file_path: track.path
-          }));
-          
-          onScanComplete?.(libraryTracks);
-          
-          // 保存音乐库数据到后端
+        if (files.length > 0) {
+          // 获取文件的元数据
           try {
-            await invoke('save_library', {
-              tracks: libraryTracks,
-              scannedPaths: [selectedFolder]
+            const tracksData: Track[] = await invoke('get_metadata_for_files', {
+              files: files,
             });
-            console.log('音乐库数据已保存');
-          } catch (saveError) {
-            console.error('保存音乐库数据失败:', saveError);
-            // 不显示错误给用户，因为扫描本身是成功的
+
+            setTracks(tracksData);
+            
+            // 检查是否有文件处理失败（duration为0可能表示处理失败）
+            const failedFiles = tracksData.filter(track => 
+              track.duration === 0 && 
+              track.artist === 'Unknown Artist'
+            );
+            
+            if (failedFiles.length > 0) {
+              setWarnings(failedFiles.map(track => 
+                `文件 ${track.path.split('/').pop()} 可能已损坏或格式不支持`
+              ));
+            }
+
+            // 调用回调函数，传递扫描到的曲目
+            const libraryTracks = tracksData.map(track => ({
+              title: track.title || track.path.split('/').pop() || 'Unknown',
+              artist: track.artist || 'Unknown Artist',
+              album: track.album || 'Unknown Album',
+              duration: track.duration,
+              file_path: track.path
+            }));
+            
+            onScanComplete?.(libraryTracks);
+            
+            // 保存音乐库数据到后端
+            try {
+              await invoke('save_library', {
+                tracks: libraryTracks,
+                scannedPaths: [selectedFolder]
+              });
+              console.log('音乐库数据已保存');
+            } catch (saveError) {
+              console.error('保存音乐库数据失败:', saveError);
+              // 不显示错误给用户，因为扫描本身是成功的
+            }
+          } catch (metadataError) {
+            // 如果元数据提取完全失败，仍然显示文件列表
+            setError('部分文件元数据提取失败：' + String(metadataError));
+            // 创建基本的track列表
+            const basicTracks = files.map(file => ({
+              path: file,
+              title: file.split('/').pop() || 'Unknown',
+              artist: 'Unknown Artist',
+              album: 'Unknown Album',
+              genre: 'Unknown',
+              year: undefined,
+              duration: 0
+            }));
+            setTracks(basicTracks);
           }
-        } catch (metadataError) {
-          // 如果元数据提取完全失败，仍然显示文件列表
-          setError('部分文件元数据提取失败：' + String(metadataError));
-          // 创建基本的track列表
-          const basicTracks = files.map(file => ({
-            path: file,
-            title: file.split('/').pop() || 'Unknown',
-            artist: 'Unknown Artist',
-            album: 'Unknown Album',
-            genre: 'Unknown',
-            year: undefined,
-            duration: 0
-          }));
-          setTracks(basicTracks);
         }
       }
     } catch (err) {
@@ -176,9 +196,9 @@ const FileBrowser: React.FC<FileBrowserProps> = ({ onScanComplete }) => {
               {isScanning ? (
                 <Loader2 size={20} className="animate-spin" />
               ) : (
-                <Music size={20} />
-              )}
-              <span>{isScanning ? '扫描中...' : '扫描音乐文件'}</span>
+                <MediaIcon size={20} />
+                )}
+                <span>{isScanning ? '扫描中...' : `扫描${mediaLabel}文件`}</span>
             </button>
           )}
         </div>
@@ -204,13 +224,13 @@ const FileBrowser: React.FC<FileBrowserProps> = ({ onScanComplete }) => {
                 <div className={`text-lg font-medium ${
                   actualTheme === 'dark' ? 'text-white' : 'text-gray-900'
                 }`}>
-                  正在扫描音乐文件...
+                  正在扫描{mediaLabel}文件...
                 </div>
                 {scanProgress.total > 0 && (
                   <div className={`text-sm mt-2 ${
                     actualTheme === 'dark' ? 'text-gray-300' : 'text-gray-600'
                   }`}>
-                    已发现 {scannedFiles.length} 个音乐文件
+                    已发现 {scannedFiles.length} 个{mediaLabel}文件
                   </div>
                 )}
                 <div className={`w-64 h-2 rounded-full mt-3 ${
@@ -258,7 +278,7 @@ const FileBrowser: React.FC<FileBrowserProps> = ({ onScanComplete }) => {
       {scannedFiles.length > 0 && (
         <div className="bg-gray-800 rounded-lg p-6">
           <h3 className="text-lg font-semibold mb-4">
-            扫描结果：找到 {scannedFiles.length} 个音频文件
+            扫描结果：找到 {scannedFiles.length} 个{mediaLabel}文件
           </h3>
 
           {tracks.length > 0 ? (
@@ -295,8 +315,8 @@ const FileBrowser: React.FC<FileBrowserProps> = ({ onScanComplete }) => {
       {!selectedFolder && !isScanning && scannedFiles.length === 0 && (
         <div className="text-center py-12">
           <FolderOpen size={64} className="text-gray-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold mb-2">选择音乐文件夹开始</h3>
-          <p className="text-gray-400">点击"选择文件夹"按钮来浏览您的音乐收藏</p>
+          <h3 className="text-lg font-semibold mb-2">选择{mediaLabel}文件夹开始</h3>
+          <p className="text-gray-400">点击"选择文件夹"按钮来浏览您的{mediaLabel}收藏</p>
         </div>
       )}
     </div>

@@ -1,19 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { invoke } from '@tauri-apps/api/core';
+import { ThemeProvider, useTheme } from './contexts/ThemeContext';
+import { MediaTypeProvider, useMediaType } from './contexts/MediaTypeContext';
+import { VideoPlaylistProvider } from './contexts/VideoPlaylistContext';
+import { usePlaybackMode } from './hooks/usePlaybackMode';
+import { MediaType } from './types/media';
 import Sidebar from './components/Sidebar';
-import MainPlayback from './components/MainPlayback';
+import { MobileNav } from './components/MobileNav';
 import { LibraryView } from './components/LibraryView';
 import PlaylistView from './components/PlaylistView';
 import { PlaybackControls } from './components/PlaybackControls';
+import { VideoLibraryView } from './components/VideoLibraryView';
+import VideoPlaylistView from './components/VideoPlaylistView';
+import { VideoPlaybackView } from './components/VideoPlaybackView';
 import { AudioTest } from './components/AudioTest';
 import { ProgressBarDemo } from './components/ProgressBarDemo';
 import { SettingsView } from './components/SettingsView';
-import { MobileNav } from './components/MobileNav';
-import { PageTransition } from './components/AnimatedComponents';
-import { ThemeProvider, useTheme } from './contexts/ThemeContext';
-import { usePlaybackMode } from './hooks/usePlaybackMode';
+import { VideoFile, VideoPlaylist } from './types/video';
 import './App.css';
 
 interface Track {
@@ -32,7 +37,22 @@ interface PlaybackState {
   volume: number;
 }
 
-// 动画路由组件
+// 页面过渡动画组件
+const PageTransition: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3 }}
+      className="h-full flex flex-col"
+    >
+      {children}
+    </motion.div>
+  );
+};
+
+// 路由动画组件
 const AnimatedRoutes: React.FC<{
   currentTrack?: Track;
   isPlaying: boolean;
@@ -40,15 +60,41 @@ const AnimatedRoutes: React.FC<{
   onPlayResume: () => void;
   onPause: () => void;
   onPlaylistUpdate: (tracks: Track[]) => void;
-}> = ({ currentTrack, isPlaying, onTrackSelect, onPlayResume, onPause, onPlaylistUpdate }) => {
+  currentVideo?: VideoFile;
+  videoPlaylist: VideoFile[];
+  currentVideoPlaylist?: VideoPlaylist;
+  onVideoSelect: (video: VideoFile) => void;
+  onVideoPlaylistUpdate: (videos: VideoFile[]) => void;
+  onCurrentVideoPlaylistUpdate: (playlist: VideoPlaylist | undefined) => void;
+}> = ({ 
+  currentTrack, 
+  isPlaying, 
+  onTrackSelect, 
+  onPlayResume, 
+  onPause, 
+  onPlaylistUpdate,
+  currentVideo,
+  videoPlaylist,
+  currentVideoPlaylist,
+  onVideoSelect,
+  onVideoPlaylistUpdate,
+  onCurrentVideoPlaylistUpdate
+}) => {
   const location = useLocation();
 
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence mode="wait" initial={false}>
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={
           <PageTransition>
-            <MainPlayback />
+            <LibraryView 
+              onTrackSelect={onTrackSelect}
+              currentTrack={currentTrack}
+              isPlaying={isPlaying}
+              onPlayResume={onPlayResume}
+              onPause={onPause}
+              onPlaylistUpdate={onPlaylistUpdate}
+            />
           </PageTransition>
         } />
         <Route path="/library" element={
@@ -67,9 +113,46 @@ const AnimatedRoutes: React.FC<{
           <PageTransition>
             <PlaylistView 
               onTrackSelect={onTrackSelect}
-              onPlaylistUpdate={onPlaylistUpdate}
               currentTrack={currentTrack}
               isPlaying={isPlaying}
+              onPlaylistUpdate={onPlaylistUpdate}
+            />
+          </PageTransition>
+        } />
+        <Route path="/video-playlists" element={
+          <PageTransition>
+            <VideoPlaylistView 
+              onVideoSelect={onVideoSelect}
+              currentVideo={currentVideo || undefined}
+              isPlaying={isPlaying}
+              onPlayResume={onPlayResume}
+              onPause={onPause}
+              onPlaylistUpdate={onVideoPlaylistUpdate}
+              onCurrentVideoPlaylistUpdate={onCurrentVideoPlaylistUpdate}
+            />
+          </PageTransition>
+        } />
+        <Route path="/videos" element={
+          <PageTransition>
+            <VideoLibraryView 
+              onVideoSelect={onVideoSelect}
+              currentVideo={currentVideo || undefined}
+              isPlaying={isPlaying}
+              onPlayResume={onPlayResume}
+              onPause={onPause}
+              onPlaylistUpdate={onVideoPlaylistUpdate}
+              onCurrentVideoPlaylistUpdate={onCurrentVideoPlaylistUpdate}
+            />
+          </PageTransition>
+        } />
+        <Route path="/video-playback" element={
+          <PageTransition>
+            <VideoPlaybackView 
+              currentVideo={currentVideo}
+              playlist={currentVideoPlaylist ? currentVideoPlaylist.items.map(item => item.video) : videoPlaylist}
+              playlistName={currentVideoPlaylist?.name}
+              onVideoSelect={onVideoSelect}
+              onBack={() => window.history.back()}
             />
           </PageTransition>
         } />
@@ -96,8 +179,9 @@ const AnimatedRoutes: React.FC<{
 // 主应用内容组件
 const AppContent: React.FC = () => {
   const { actualTheme } = useTheme();
+  const { isAudioMode, isVideoMode, switchMediaType } = useMediaType();
   
-  const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
+  const [currentTrack, setCurrentTrack] = useState<Track | undefined>(undefined);
   const [playbackState, setPlaybackState] = useState<PlaybackState>({
     is_playing: false,
     current_track: null,
@@ -110,13 +194,17 @@ const AppContent: React.FC = () => {
   const [shouldPause, setShouldPause] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+  // 视频播放状态
+  const [currentVideo, setCurrentVideo] = useState<VideoFile | undefined>(undefined);
+  const [videoPlaylist, setVideoPlaylist] = useState<VideoFile[]>([]);
+  const [currentVideoPlaylist, setCurrentVideoPlaylist] = useState<VideoPlaylist | undefined>(undefined);
+
   // 播放模式管理
   const {
     playbackMode,
     playbackModeInfo,
     togglePlaybackMode,
-    getNextTrack,
-    shouldAutoPlay
+    getNextTrack
   } = usePlaybackMode(playlist);
 
   // 处理侧边栏切换
@@ -133,12 +221,32 @@ const AppContent: React.FC = () => {
   const handleTrackSelect = (track: Track) => {
     console.log('App: Track selected:', track.title);
     setCurrentTrack(track);
+    switchMediaType(MediaType.AUDIO); // 切换到音频模式
+  };
+
+  // 处理视频选择
+  const handleVideoSelect = (video: VideoFile) => {
+    console.log('App: Video selected:', video.title);
+    setCurrentVideo(video);
+    switchMediaType(MediaType.VIDEO); // 切换到视频模式
   };
 
   // 处理播放列表更新
   const handlePlaylistUpdate = (tracks: Track[]) => {
     console.log('App: Playlist updated with', tracks.length, 'tracks');
     setPlaylist(tracks);
+  };
+
+  // 处理视频播放列表更新
+  const handleVideoPlaylistUpdate = (videos: VideoFile[]) => {
+    console.log('App: Video playlist updated with', videos.length, 'videos');
+    setVideoPlaylist(videos);
+  };
+
+  // 处理当前视频播放列表更新
+  const handleCurrentVideoPlaylistUpdate = (playlist: VideoPlaylist | undefined) => {
+    console.log('App: Current video playlist updated:', playlist?.name || 'none');
+    setCurrentVideoPlaylist(playlist);
   };
 
   // 处理播放状态更新（从PlaybackControls传递上来）
@@ -229,33 +337,89 @@ const AppContent: React.FC = () => {
         
         {/* Main content */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Top content area */}
-          <div className="flex-1 overflow-auto">
-                         <AnimatedRoutes 
-               currentTrack={currentTrack || undefined}
-               isPlaying={playbackState.is_playing}
-               onTrackSelect={handleTrackSelect}
-               onPlayResume={handlePlayResume}
-               onPause={handlePause}
-               onPlaylistUpdate={handlePlaylistUpdate}
-             />
+          {/* Media Type Status Bar */}
+          <div className={`px-4 py-2 border-b transition-colors duration-200 ${
+            actualTheme === 'dark'
+              ? 'bg-gray-800 border-gray-700'
+              : 'bg-white border-gray-200'
+          }`}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <span className={`text-sm font-medium ${
+                  actualTheme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+                }`}>
+                  当前模式:
+                </span>
+                <div className={`flex items-center space-x-2 px-3 py-1 rounded-full text-sm font-medium ${
+                  isVideoMode 
+                    ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
+                    : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                }`}>
+                  <span className={`w-2 h-2 rounded-full ${
+                    isVideoMode ? 'bg-purple-500' : 'bg-blue-500'
+                  }`}></span>
+                  <span>{isVideoMode ? '视频模式' : '音频模式'}</span>
+                </div>
+              </div>
+              
+              {/* 当前播放信息 */}
+              <div className="flex items-center space-x-4">
+                {isVideoMode && currentVideo && (
+                  <div className={`text-sm ${
+                    actualTheme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+                  }`}>
+                    正在播放: {currentVideo.title}
+                  </div>
+                )}
+                {isAudioMode && currentTrack && (
+                  <div className={`text-sm ${
+                    actualTheme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+                  }`}>
+                    正在播放: {currentTrack.title} - {currentTrack.artist}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Routes */}
+          <div className="flex-1 overflow-hidden">
+            <AnimatedRoutes
+              currentTrack={currentTrack}
+              isPlaying={playbackState.is_playing}
+              onTrackSelect={handleTrackSelect}
+              onPlayResume={handlePlayResume}
+              onPause={handlePause}
+              onPlaylistUpdate={handlePlaylistUpdate}
+              currentVideo={currentVideo}
+              videoPlaylist={videoPlaylist}
+              currentVideoPlaylist={currentVideoPlaylist}
+              onVideoSelect={handleVideoSelect}
+              onVideoPlaylistUpdate={handleVideoPlaylistUpdate}
+              onCurrentVideoPlaylistUpdate={handleCurrentVideoPlaylistUpdate}
+            />
           </div>
         </div>
       </div>
-      
-      {/* Bottom player controls */}
-      <PlaybackControls 
-        currentTrack={currentTrack || undefined}
-        playlist={playlist}
-        onTrackChange={handleTrackChange}
-        onPlaybackStateChange={handlePlaybackStateChange}
-        shouldResume={shouldResume}
-        onResumeComplete={() => setShouldResume(false)}
-        shouldPause={shouldPause}
-        onPauseComplete={() => setShouldPause(false)}
-        playbackModeInfo={playbackModeInfo}
-        onTogglePlaybackMode={togglePlaybackMode}
-      />
+
+      {/* Playback Controls - 只在音频模式下显示 */}
+      {isAudioMode && (
+        <PlaybackControls
+          currentTrack={currentTrack ? {
+            title: currentTrack.title,
+            artist: currentTrack.artist,
+            file_path: currentTrack.file_path
+          } : undefined}
+          onPlaybackStateChange={handlePlaybackStateChange}
+          shouldResume={shouldResume}
+          shouldPause={shouldPause}
+          onResumeComplete={() => setShouldResume(false)}
+          onPauseComplete={() => setShouldPause(false)}
+          onTrackChange={handleTrackChange}
+          playbackModeInfo={playbackModeInfo}
+          onTogglePlaybackMode={togglePlaybackMode}
+        />
+      )}
     </div>
   );
 };
@@ -263,9 +427,13 @@ const AppContent: React.FC = () => {
 function App() {
   return (
     <ThemeProvider>
-      <Router>
-        <AppContent />
-      </Router>
+      <MediaTypeProvider>
+        <VideoPlaylistProvider>
+          <Router>
+            <AppContent />
+          </Router>
+        </VideoPlaylistProvider>
+      </MediaTypeProvider>
     </ThemeProvider>
   );
 }

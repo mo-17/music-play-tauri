@@ -4,7 +4,7 @@ import FileBrowser from './FileBrowser';
 import { Play, Pause, Music, Plus } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { TrackCard } from './TrackCard';
-import { PageTransition, AnimatedList, AnimatedListItem, FadeIn } from './AnimatedComponents';
+import { AnimatedList, AnimatedListItem } from './AnimatedComponents';
 
 interface Track {
   title: string;
@@ -79,9 +79,14 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
   }, []);
 
   // 处理文件夹扫描完成
-  const handleScanComplete = (scannedTracks: Track[]) => {
-    setTracks(scannedTracks);
-    onPlaylistUpdate?.(scannedTracks);
+  const handleScanComplete = (scannedTracks: any) => {
+    console.log('LibraryView: Scan completed with', scannedTracks.length, 'tracks');
+    // 确保数据格式正确
+    const tracks = Array.isArray(scannedTracks) ? scannedTracks.filter(track => 
+      track && typeof track === 'object' && track.file_path
+    ) : [];
+    setTracks(tracks);
+    onPlaylistUpdate?.(tracks);
   };
 
   // 清除音乐库
@@ -316,12 +321,12 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
                 }`}>
                   {filteredAndSortedTracks.map((track, index) => {
                     const isCurrentTrack = currentTrack?.file_path === track.file_path;
-                    const isCurrentlyPlaying = isCurrentTrack && isPlaying;
-                    
-                    // 调试日志
-                    if (isCurrentTrack) {
-                      console.log('LibraryView: Current track:', track.title, 'isPlaying:', isPlaying, 'isCurrentlyPlaying:', isCurrentlyPlaying);
-                    }
+                                          const isCurrentlyPlaying = isCurrentTrack && isPlaying;
+                      
+                      // 调试日志
+                      if (isCurrentTrack) {
+                        console.log('LibraryView: Current track:', track.title, 'isPlaying:', isPlaying, 'isCurrentlyPlaying:', isCurrentlyPlaying);
+                      }
                     
                     return (
                       <tr 

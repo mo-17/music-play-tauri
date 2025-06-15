@@ -1,5 +1,5 @@
 import React from 'react';
-import { Play, Pause, Music, Plus } from 'lucide-react';
+import { Music, Plus } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { HoverScale, TapRipple } from './AnimatedComponents';
 import { CompactPlayButton } from './AnimatedPlayButton';
@@ -25,7 +25,7 @@ interface TrackCardProps {
 
 export const TrackCard: React.FC<TrackCardProps> = ({
   track,
-  index,
+  // index,
   isCurrentTrack,
   isPlaying,
   onPlay,

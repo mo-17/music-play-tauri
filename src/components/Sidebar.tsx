@@ -1,22 +1,35 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Music, List, Settings, TestTube, Palette } from 'lucide-react';
+import { Home, Music, Video, List, Settings, TestTube, Palette } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { useTheme } from '../contexts/ThemeContext';
+import { useMediaType } from '../contexts/MediaTypeContext';
+import MediaTypeSwitcher from './MediaTypeSwitcher';
 import { motion } from 'framer-motion';
-import { HoverScale, FadeIn, AnimatedList, AnimatedListItem } from './AnimatedComponents';
+import { FadeIn, AnimatedList, AnimatedListItem } from './AnimatedComponents';
 
 const Sidebar: React.FC = () => {
   const location = useLocation();
   const { actualTheme } = useTheme();
+  const { isAudioMode, isVideoMode } = useMediaType();
 
   const navItems = [
     { path: '/', icon: Home, label: '主页' },
-    { path: '/library', icon: Music, label: '音乐库' },
-    { path: '/playlists', icon: List, label: '播放列表' },
-    { path: '/test', icon: TestTube, label: '音频测试' },
+    { path: '/library', icon: Music, label: '音乐库', mediaType: 'audio' },
+    { path: '/videos', icon: Video, label: '视频库', mediaType: 'video' },
+    { path: '/playlists', icon: List, label: '音频播放列表', mediaType: 'audio' },
+    { path: '/video-playlists', icon: List, label: '视频播放列表', mediaType: 'video' },
+    { path: '/test', icon: TestTube, label: '音频测试', mediaType: 'audio' },
     { path: '/progress-bar-demo', icon: Palette, label: '进度条样式' },
   ];
+
+  // 根据当前媒体类型过滤导航项
+  const filteredNavItems = navItems.filter(item => {
+    if (!item.mediaType) return true; // 通用项目始终显示
+    if (item.mediaType === 'audio' && isAudioMode) return true;
+    if (item.mediaType === 'video' && isVideoMode) return true;
+    return false;
+  });
 
   return (
     <motion.div 
@@ -40,10 +53,21 @@ const Sidebar: React.FC = () => {
         </div>
       </FadeIn>
 
+      {/* Media Type Switcher */}
+      <FadeIn delay={0.2}>
+        <div className="mb-6">
+          <MediaTypeSwitcher 
+            variant="tabs" 
+            size="small" 
+            className="w-full"
+          />
+        </div>
+      </FadeIn>
+
       {/* Navigation */}
       <nav className="flex-1">
         <AnimatedList>
-          {navItems.map((item, index) => {
+          {filteredNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
             

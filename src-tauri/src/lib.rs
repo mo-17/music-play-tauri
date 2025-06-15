@@ -1,6 +1,7 @@
 mod audio;
 mod library;
 mod playlist;
+mod video;
 
 use audio::{AudioState, PlaybackState};
 use std::sync::{Arc, Mutex};
@@ -40,7 +41,15 @@ pub fn run() {
             playlist::delete_playlist,
             playlist::add_track_to_playlist,
             playlist::remove_track_from_playlist,
-            playlist::update_playlist_info
+            playlist::update_playlist_info,
+            video::scan_video_files,
+            video::get_video_metadata,
+            video::validate_video_file,
+            video::get_supported_video_formats,
+            video::generate_video_thumbnail,
+            video::get_saved_video_library,
+            video::save_video_library,
+            video::clear_video_library
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

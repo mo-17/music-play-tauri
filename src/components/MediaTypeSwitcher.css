@@ -1,0 +1,347 @@
+/* 媒体类型切换器基础样式 */
+.media-type-switcher {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  font-family: inherit;
+  user-select: none;
+}
+
+.media-type-switcher.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* 尺寸变体 */
+.media-type-switcher.small {
+  font-size: 0.875rem;
+}
+
+.media-type-switcher.medium {
+  font-size: 1rem;
+}
+
+.media-type-switcher.large {
+  font-size: 1.125rem;
+}
+
+/* 按钮变体样式 */
+.media-type-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1),
+    rgba(255, 255, 255, 0.05)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.75rem;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+}
+
+.media-type-button:hover:not(.disabled) {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.15),
+    rgba(255, 255, 255, 0.08)
+  );
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.media-type-button .media-type-icon {
+  font-size: 1.25em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.media-type-button .media-type-label {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.media-type-button .transition-indicator {
+  position: absolute;
+  top: 50%;
+  right: 0.5rem;
+  transform: translateY(-50%);
+  width: 0.5rem;
+  height: 0.5rem;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  animation: pulse 1s infinite;
+}
+
+/* 标签页变体样式 */
+.media-type-tabs {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 0.75rem;
+  padding: 0.25rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tabs-container {
+  position: relative;
+  display: flex;
+  gap: 0.25rem;
+}
+
+.tab-button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: none;
+  border-radius: 0.5rem;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 2;
+  font-size: inherit;
+}
+
+.tab-button:hover:not(.disabled) {
+  color: rgba(255, 255, 255, 0.9);
+  transform: translateY(-1px);
+}
+
+.tab-button.active {
+  color: white;
+}
+
+.tab-icon {
+  font-size: 1.1em;
+}
+
+.tab-label {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.tab-indicator {
+  position: absolute;
+  top: 0.25rem;
+  left: 0.25rem;
+  bottom: 0.25rem;
+  width: calc(50% - 0.25rem);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.2),
+    rgba(255, 255, 255, 0.1)
+  );
+  border-radius: 0.5rem;
+  z-index: 1;
+  backdrop-filter: blur(5px);
+}
+
+/* 切换开关变体样式 */
+.media-type-toggle {
+  position: relative;
+}
+
+.toggle-container {
+  position: relative;
+  display: flex;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 2rem;
+  padding: 0.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.toggle-option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: none;
+  border-radius: 1.5rem;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 2;
+  font-size: inherit;
+  min-width: 4rem;
+  justify-content: center;
+}
+
+.toggle-option:hover:not(.disabled) {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.toggle-option.active {
+  color: white;
+}
+
+.option-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.option-icon {
+  font-size: 1.1em;
+}
+
+.option-label {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.toggle-slider {
+  position: absolute;
+  top: 0.25rem;
+  left: 0.25rem;
+  bottom: 0.25rem;
+  width: calc(50% - 0.25rem);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.2),
+    rgba(255, 255, 255, 0.1)
+  );
+  border-radius: 1.5rem;
+  z-index: 1;
+  backdrop-filter: blur(5px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 过渡动画覆盖层 */
+.transition-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  backdrop-filter: blur(2px);
+}
+
+.transition-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* 动画关键帧 */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: translateY(-50%) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-50%) scale(1.2);
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .media-type-switcher.small .option-label,
+  .media-type-switcher.small .tab-label,
+  .media-type-switcher.small .media-type-label {
+    display: none;
+  }
+
+  .toggle-option {
+    min-width: 3rem;
+  }
+}
+
+/* 深色主题适配 */
+@media (prefers-color-scheme: dark) {
+  .media-type-switcher {
+    color: rgba(255, 255, 255, 0.9);
+  }
+}
+
+/* 浅色主题适配 */
+@media (prefers-color-scheme: light) {
+  .media-type-button {
+    background: linear-gradient(
+      135deg,
+      rgba(0, 0, 0, 0.05),
+      rgba(0, 0, 0, 0.02)
+    );
+    border-color: rgba(0, 0, 0, 0.1);
+    color: rgba(0, 0, 0, 0.8);
+  }
+
+  .media-type-button:hover:not(.disabled) {
+    background: linear-gradient(
+      135deg,
+      rgba(0, 0, 0, 0.08),
+      rgba(0, 0, 0, 0.04)
+    );
+    border-color: rgba(0, 0, 0, 0.15);
+  }
+
+  .media-type-tabs,
+  .toggle-container {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.08);
+  }
+
+  .tab-button,
+  .toggle-option {
+    color: rgba(0, 0, 0, 0.6);
+  }
+
+  .tab-button:hover:not(.disabled),
+  .toggle-option:hover:not(.disabled) {
+    color: rgba(0, 0, 0, 0.8);
+  }
+
+  .tab-button.active,
+  .toggle-option.active {
+    color: rgba(0, 0, 0, 0.9);
+  }
+
+  .tab-indicator,
+  .toggle-slider {
+    background: linear-gradient(
+      135deg,
+      rgba(0, 0, 0, 0.1),
+      rgba(0, 0, 0, 0.05)
+    );
+  }
+
+  .transition-overlay {
+    background: rgba(0, 0, 0, 0.03);
+  }
+
+  .transition-spinner {
+    border-color: rgba(0, 0, 0, 0.2);
+    border-top-color: rgba(0, 0, 0, 0.6);
+  }
+}

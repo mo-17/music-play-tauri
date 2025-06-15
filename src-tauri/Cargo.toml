@@ -34,3 +34,9 @@ rodio = "0.19"
 uuid = { version = "1.0", features = ["v4"] }
 chrono = { version = "0.4", features = ["serde"] }
 
+# Video processing dependencies
+ffmpeg-next = "7.1.0"
+image = "0.25.5"
+mime_guess = "2.0.5"
+walkdir = "2.5.0"
+
