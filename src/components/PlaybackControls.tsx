@@ -3,7 +3,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { convertFileSrc } from '@tauri-apps/api/core';
 import { SkipBack, SkipForward, Volume2, VolumeX, BarChart3 } from 'lucide-react';
 import { AudioVisualizer } from './AudioVisualizer';
-import { NeonProgressBar } from './NeonProgressBar';
+import { NeonProgressBar } from './progress-bars';
 import { AnimatedPlayButton } from './AnimatedPlayButton';
 import { useTheme } from '../contexts/ThemeContext';
 import { useNotifications } from '../hooks/useNotifications';
@@ -459,8 +459,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
                 value={playbackState.position}
                 max={playbackState.duration || 100}
                 onChange={seekTo}
-                variant="primary"
-                disabled={!currentTrackInfo}
+                color="cyan"
                 className="w-full"
               />
             </div>
@@ -501,7 +500,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
                 value={playbackState.volume}
                 max={1}
                 onChange={setVolume}
-                variant="volume"
+                color="green"
                 className="w-full"
               />
             </div>
@@ -606,8 +605,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
                 value={playbackState.position}
                 max={playbackState.duration || 100}
                 onChange={seekTo}
-                variant="primary"
-                disabled={!currentTrackInfo}
+                color="cyan"
                 className="w-full"
               />
             </div>

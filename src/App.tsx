@@ -16,7 +16,7 @@ import { VideoLibraryView } from './components/VideoLibraryView';
 import VideoPlaylistView from './components/VideoPlaylistView';
 import { VideoPlaybackView } from './components/VideoPlaybackView';
 import { AudioTest } from './components/AudioTest';
-import { ProgressBarDemo } from './components/ProgressBarDemo';
+import { ProgressBarDemo } from './components/progress-bars';
 import { SettingsView } from './components/SettingsView';
 import { VideoFile, VideoPlaylist } from './types/video';
 import './App.css';

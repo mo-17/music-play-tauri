@@ -18,7 +18,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { VideoFile } from '../types/video';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { convertFileSrc } from '@tauri-apps/api/core';
-import { NeonProgressBar } from './NeonProgressBar';
+import { NeonProgressBar } from './progress-bars';
 
 interface VideoPlayerProps {
   currentVideo?: VideoFile;
