@@ -1,0 +1,547 @@
+/* 视频播放器动画和视觉效果 */
+
+/* 基础动画变量 */
+:root {
+  --animation-duration-fast: 0.15s;
+  --animation-duration-normal: 0.3s;
+  --animation-duration-slow: 0.5s;
+  --animation-easing-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --animation-easing-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --animation-easing-elastic: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* 控制栏显示/隐藏动画 */
+.controls-enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.controls-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: all var(--animation-duration-normal)
+    var(--animation-easing-smooth);
+}
+
+.controls-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.controls-exit-active {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all var(--animation-duration-normal)
+    var(--animation-easing-smooth);
+}
+
+/* 按钮悬停和点击动画 */
+.button-interactive {
+  position: relative;
+  overflow: hidden;
+  transition: all var(--animation-duration-fast) var(--animation-easing-smooth);
+  transform: scale(1);
+}
+
+.button-interactive::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: all var(--animation-duration-normal)
+    var(--animation-easing-smooth);
+  pointer-events: none;
+}
+
+.button-interactive:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.button-interactive:hover::before {
+  width: 100%;
+  height: 100%;
+}
+
+.button-interactive:active {
+  transform: scale(0.95);
+  transition-duration: var(--animation-duration-fast);
+}
+
+/* 播放按钮特殊动画 */
+.play-button {
+  position: relative;
+  transition: all var(--animation-duration-normal)
+    var(--animation-easing-bounce);
+}
+
+.play-button:hover {
+  transform: scale(1.1);
+  filter: drop-shadow(0 0 20px rgba(6, 182, 212, 0.5));
+}
+
+.play-button:active {
+  transform: scale(0.9);
+}
+
+/* 播放状态切换动画 */
+.play-icon-enter {
+  opacity: 0;
+  transform: scale(0.5) rotate(90deg);
+}
+
+.play-icon-enter-active {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+  transition: all var(--animation-duration-normal)
+    var(--animation-easing-elastic);
+}
+
+.pause-icon-enter {
+  opacity: 0;
+  transform: scale(0.5) rotate(-90deg);
+}
+
+.pause-icon-enter-active {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+  transition: all var(--animation-duration-normal)
+    var(--animation-easing-elastic);
+}
+
+/* 进度条动画 */
+.progress-bar {
+  position: relative;
+  overflow: hidden;
+  transition: height var(--animation-duration-fast)
+    var(--animation-easing-smooth);
+}
+
+.progress-bar::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  animation: progress-shimmer 2s infinite;
+}
+
+@keyframes progress-shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+.progress-fill {
+  transition: width var(--animation-duration-fast) linear;
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-fill::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 4px;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(6, 182, 212, 0.6);
+  animation: progress-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes progress-pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: scaleY(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleY(1.2);
+  }
+}
+
+/* 音量滑块动画 */
+.volume-slider {
+  transition: all var(--animation-duration-fast) var(--animation-easing-smooth);
+}
+
+.volume-slider:hover {
+  transform: scaleY(1.1);
+}
+
+.volume-slider::-webkit-slider-thumb {
+  transition: all var(--animation-duration-fast) var(--animation-easing-smooth);
+}
+
+.volume-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.3);
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.6);
+}
+
+/* 手势反馈动画 */
+.gesture-indicator {
+  animation: gesture-pop var(--animation-duration-slow)
+    var(--animation-easing-bounce);
+}
+
+@keyframes gesture-pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* 加载动画 */
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid #06b6d4;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* 缓冲动画 */
+.buffering-dots {
+  display: flex;
+  gap: 4px;
+}
+
+.buffering-dot {
+  width: 8px;
+  height: 8px;
+  background: #06b6d4;
+  border-radius: 50%;
+  animation: buffering-bounce 1.4s ease-in-out infinite both;
+}
+
+.buffering-dot:nth-child(1) {
+  animation-delay: -0.32s;
+}
+.buffering-dot:nth-child(2) {
+  animation-delay: -0.16s;
+}
+.buffering-dot:nth-child(3) {
+  animation-delay: 0s;
+}
+
+@keyframes buffering-bounce {
+  0%,
+  80%,
+  100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+/* 音量波形动画 */
+.volume-wave {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.volume-bar {
+  width: 3px;
+  background: #06b6d4;
+  border-radius: 1.5px;
+  animation: volume-wave 1.2s ease-in-out infinite;
+}
+
+.volume-bar:nth-child(1) {
+  height: 12px;
+  animation-delay: 0s;
+}
+
+.volume-bar:nth-child(2) {
+  height: 16px;
+  animation-delay: 0.1s;
+}
+
+.volume-bar:nth-child(3) {
+  height: 20px;
+  animation-delay: 0.2s;
+}
+
+.volume-bar:nth-child(4) {
+  height: 16px;
+  animation-delay: 0.3s;
+}
+
+.volume-bar:nth-child(5) {
+  height: 12px;
+  animation-delay: 0.4s;
+}
+
+@keyframes volume-wave {
+  0%,
+  100% {
+    transform: scaleY(0.5);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+/* 全屏切换动画 */
+.fullscreen-transition {
+  transition: all var(--animation-duration-slow) var(--animation-easing-smooth);
+}
+
+.fullscreen-enter {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+.fullscreen-enter-active {
+  opacity: 1;
+  transform: scale(1);
+  transition: all var(--animation-duration-slow) var(--animation-easing-smooth);
+}
+
+.fullscreen-exit {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.fullscreen-exit-active {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: all var(--animation-duration-slow) var(--animation-easing-smooth);
+}
+
+/* 面板滑入动画 */
+.panel-slide-in {
+  animation: panel-slide var(--animation-duration-normal)
+    var(--animation-easing-smooth);
+}
+
+@keyframes panel-slide {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 时间显示数字滚动动画 */
+.time-digit {
+  display: inline-block;
+  transition: transform var(--animation-duration-fast)
+    var(--animation-easing-smooth);
+}
+
+.time-digit.updating {
+  animation: digit-flip var(--animation-duration-fast)
+    var(--animation-easing-smooth);
+}
+
+@keyframes digit-flip {
+  0% {
+    transform: rotateX(0deg);
+  }
+  50% {
+    transform: rotateX(90deg);
+  }
+  100% {
+    transform: rotateX(0deg);
+  }
+}
+
+/* 视频信息淡入动画 */
+.video-info-fade {
+  animation: fade-in-up var(--animation-duration-normal)
+    var(--animation-easing-smooth);
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 错误状态动画 */
+.error-shake {
+  animation: shake var(--animation-duration-slow) var(--animation-easing-smooth);
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-5px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(5px);
+  }
+}
+
+/* 成功状态动画 */
+.success-bounce {
+  animation: success-bounce var(--animation-duration-slow)
+    var(--animation-easing-bounce);
+}
+
+@keyframes success-bounce {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* 响应式动画调整 */
+@media (max-width: 768px) {
+  :root {
+    --animation-duration-fast: 0.1s;
+    --animation-duration-normal: 0.2s;
+    --animation-duration-slow: 0.3s;
+  }
+
+  .button-interactive:hover {
+    transform: scale(1.02);
+  }
+
+  .play-button:hover {
+    transform: scale(1.05);
+  }
+}
+
+/* 减少动画偏好支持 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .progress-bar::before,
+  .progress-fill::after {
+    animation: none;
+  }
+
+  .gesture-indicator {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* 高对比度模式动画调整 */
+@media (prefers-contrast: high) {
+  .button-interactive::before {
+    background: rgba(255, 255, 255, 0.5);
+  }
+
+  .progress-fill::after {
+    background: #ffffff;
+    box-shadow: none;
+  }
+}
+
+/* 深色模式动画优化 */
+@media (prefers-color-scheme: dark) {
+  .button-interactive::before {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .loading-spinner {
+    border-color: rgba(255, 255, 255, 0.2);
+    border-top-color: #06b6d4;
+  }
+}
+
+/* 浅色模式动画优化 */
+@media (prefers-color-scheme: light) {
+  .button-interactive::before {
+    background: rgba(0, 0, 0, 0.1);
+  }
+
+  .loading-spinner {
+    border-color: rgba(0, 0, 0, 0.2);
+    border-top-color: #06b6d4;
+  }
+}
+
+/* 性能优化 */
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform, opacity;
+}
+
+/* 动画性能提示 */
+.animate-on-scroll {
+  will-change: transform;
+}
+
+.animate-on-hover {
+  will-change: transform, box-shadow;
+}
+
+.animate-on-click {
+  will-change: transform;
+}

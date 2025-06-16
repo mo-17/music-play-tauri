@@ -1,24 +1,55 @@
 use super::metadata::{VideoMetadata, VideoMetadataExtractor};
 use super::scanner::VideoScanner;
+use super::thumbnail::{AsyncThumbnailGenerator, ThumbnailConfig, ThumbnailError};
 use super::types::*;
 use std::path::{Path, PathBuf};
+use std::sync::Once;
 use tokio::fs;
+
+// 确保FFmpeg只初始化一次
+static FFMPEG_INIT: Once = Once::new();
 
 /// 视频处理器 - 整合扫描和元数据提取功能
 pub struct VideoProcessor {
     scanner: VideoScanner,
     config: VideoLibraryConfig,
+    thumbnail_generator: AsyncThumbnailGenerator,
 }
 
 impl VideoProcessor {
     /// 创建新的视频处理器
     pub fn new(config: VideoLibraryConfig) -> Result<Self, Box<dyn std::error::Error>> {
-        // 初始化FFmpeg
-        VideoMetadataExtractor::init()?;
+        // 确保FFmpeg只初始化一次
+        let mut init_error = None;
+        FFMPEG_INIT.call_once(|| {
+            if let Err(e) = VideoMetadataExtractor::init() {
+                init_error = Some(e);
+            }
+        });
+
+        // 检查初始化是否失败
+        if let Some(error) = init_error {
+            return Err(Box::new(error));
+        }
 
         let scanner = VideoScanner::new(config.clone());
 
-        Ok(Self { scanner, config })
+        // 创建缩略图生成器
+        let thumbnail_config = ThumbnailConfig {
+            size: config.thumbnail_size,
+            quality: 85,
+            timestamp_percent: 0.1,
+            timeout_seconds: 30,
+            max_retries: 3,
+            fallback_enabled: true,
+        };
+        let thumbnail_generator = AsyncThumbnailGenerator::new(thumbnail_config);
+
+        Ok(Self {
+            scanner,
+            config,
+            thumbnail_generator,
+        })
     }
 
     /// 扫描并处理视频文件
@@ -92,15 +123,32 @@ impl VideoProcessor {
         let thumbnail_filename = format!("{}.jpg", video_file.id);
         let thumbnail_path = thumbnails_dir.join(thumbnail_filename);
 
-        // 生成缩略图
-        VideoMetadataExtractor::generate_thumbnail(
-            &video_file.file_path,
-            &thumbnail_path,
-            self.config.thumbnail_size,
-            None, // 使用默认时间戳（10%位置）
-        )?;
-
-        Ok(thumbnail_path)
+        // 使用新的异步缩略图生成器
+        match self
+            .thumbnail_generator
+            .generate_thumbnail(&video_file.file_path, &thumbnail_path)
+            .await
+        {
+            Ok(path) => Ok(path),
+            Err(ThumbnailError::Timeout) => {
+                // 超时时生成降级缩略图
+                self.thumbnail_generator
+                    .generate_fallback_thumbnail(&thumbnail_path)
+                    .await
+                    .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)
+            }
+            Err(e) => {
+                // 其他错误时也尝试降级处理
+                if self.thumbnail_generator.config().fallback_enabled {
+                    self.thumbnail_generator
+                        .generate_fallback_thumbnail(&thumbnail_path)
+                        .await
+                        .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)
+                } else {
+                    Err(Box::new(e) as Box<dyn std::error::Error>)
+                }
+            }
+        }
     }
 
     /// 验证视频文件

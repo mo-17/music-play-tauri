@@ -208,8 +208,8 @@ impl Default for VideoLibraryConfig {
                 VideoFormat::WEBM,
                 VideoFormat::M4V,
             ],
-            generate_thumbnails: false,
-            thumbnail_size: (320, 180),                   // 16:9 比例
+            generate_thumbnails: false, // 暂时禁用缩略图生成以避免崩溃
+            thumbnail_size: (320, 180), // 16:9 比例
             max_file_size: Some(10 * 1024 * 1024 * 1024), // 10GB
         }
     }

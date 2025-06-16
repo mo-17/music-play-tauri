@@ -17,6 +17,7 @@ import VideoPlaylistView from './components/VideoPlaylistView';
 import { VideoPlaybackView } from './components/VideoPlaybackView';
 import { AudioTest } from './components/AudioTest';
 import { ProgressBarDemo } from './components/progress-bars';
+import { VideoPlayerTest } from './components/VideoPlayerTest';
 import { SettingsView } from './components/SettingsView';
 import { VideoFile, VideoPlaylist } from './types/video';
 import './App.css';
@@ -166,6 +167,11 @@ const AnimatedRoutes: React.FC<{
             <ProgressBarDemo />
           </PageTransition>
         } />
+        <Route path="/video-player-test" element={
+          <PageTransition>
+            <VideoPlayerTest />
+          </PageTransition>
+        } />
         <Route path="/settings" element={
           <PageTransition>
             <SettingsView />
@@ -279,7 +285,7 @@ const AppContent: React.FC = () => {
     }
 
     // 使用播放模式管理器获取下一首歌曲
-    const newTrack = getNextTrack(currentTrack, playlist, direction);
+    const newTrack = getNextTrack(currentTrack || null, playlist, direction);
     
     if (newTrack) {
       console.log('App: Switching to track:', newTrack.title);

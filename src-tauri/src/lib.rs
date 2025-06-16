@@ -47,6 +47,7 @@ pub fn run() {
             video::validate_video_file,
             video::get_supported_video_formats,
             video::generate_video_thumbnail,
+            video::test_thumbnail_generation,
             video::get_saved_video_library,
             video::save_video_library,
             video::clear_video_library

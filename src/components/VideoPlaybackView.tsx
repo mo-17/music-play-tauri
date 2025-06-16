@@ -3,6 +3,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { VideoPlayer } from './VideoPlayer';
 import { VideoFile } from '../types/video';
 import { ArrowLeft, List } from 'lucide-react';
+import { useDesktopResponsive } from '../hooks/useDesktopResponsive';
 
 interface VideoPlaybackViewProps {
   currentVideo?: VideoFile;
@@ -27,6 +28,9 @@ export const VideoPlaybackView: React.FC<VideoPlaybackViewProps> = ({
   const [duration, setDuration] = useState(0);
   const [showPlaylist, setShowPlaylist] = useState(false);
 
+
+  // 桌面端响应式适配
+  const desktopResponsive = useDesktopResponsive();
   // 获取当前视频在播放列表中的索引
   const getCurrentVideoIndex = () => {
     if (!currentVideo || playlist.length === 0) return -1;
@@ -93,6 +97,7 @@ export const VideoPlaybackView: React.FC<VideoPlaybackViewProps> = ({
       {/* 主视频播放区域 */}
       <div className={`flex-1 flex flex-col ${showPlaylist ? 'mr-80' : ''} transition-all duration-300`}>
         {/* 顶部导航栏 */}
+        {!desktopResponsive.microWindowConfig.enabled && (
         <div className={`flex items-center justify-between p-4 border-b transition-colors ${
           actualTheme === 'dark' 
             ? 'bg-gray-800 border-gray-700 text-white' 
@@ -143,7 +148,7 @@ export const VideoPlaybackView: React.FC<VideoPlaybackViewProps> = ({
               </button>
             )}
           </div>
-        </div>
+        </div>)}
 
         {/* 视频播放器 */}
         <div className="flex-1 flex items-center justify-center bg-black">

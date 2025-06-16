@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import FileBrowser from './FileBrowser';
 import PlaybackHistory from './PlaybackHistory';
 import PlaybackStats from './PlaybackStats';
+import ThumbnailTest from './ThumbnailTest';
 import { 
   Play, 
   Pause, 
@@ -14,7 +15,8 @@ import {
   Plus,
   History,
   BarChart3,
-  Library
+  Library,
+  Image as ImageIcon
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useVideoPlaylist } from '../contexts/VideoPlaylistContext';
@@ -69,6 +71,7 @@ export const VideoLibraryView: React.FC<VideoLibraryViewProps> = ({
   const [activeTab, setActiveTab] = useState<'library' | 'history' | 'stats'>('library');
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
   const [selectedVideoForPlaylist, setSelectedVideoForPlaylist] = useState<VideoFile | null>(null);
+  const [showThumbnailTest, setShowThumbnailTest] = useState(false);
   const navigate = useNavigate();
 
   // 保存视频库到Tauri后端
@@ -563,14 +566,25 @@ export const VideoLibraryView: React.FC<VideoLibraryViewProps> = ({
             }`}>
               视频管理
             </h1>
-            {activeTab === 'library' && videos.length > 0 && (
-              <button
-                onClick={clearVideoLibrary}
-                disabled={loading}
-                className="bg-red-600 hover:bg-red-700 disabled:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg transition-colors"
-              >
-                {loading ? '清除中...' : '清除视频库'}
-              </button>
+            {activeTab === 'library' && (
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => setShowThumbnailTest(true)}
+                  className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center"
+                >
+                  <ImageIcon size={16} className="mr-2" />
+                  缩略图测试
+                </button>
+                {videos.length > 0 && (
+                  <button
+                    onClick={clearVideoLibrary}
+                    disabled={loading}
+                    className="bg-red-600 hover:bg-red-700 disabled:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+                  >
+                    {loading ? '清除中...' : '清除视频库'}
+                  </button>
+                )}
+              </div>
             )}
           </div>
 
@@ -1000,6 +1014,11 @@ export const VideoLibraryView: React.FC<VideoLibraryViewProps> = ({
               </div>
             </div>
           </div>
+        )}
+
+        {/* 缩略图测试模态框 */}
+        {showThumbnailTest && (
+          <ThumbnailTest onClose={() => setShowThumbnailTest(false)} />
         )}
       </div>
     </div>

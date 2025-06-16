@@ -1,9 +1,9 @@
 use super::processor::VideoProcessor;
 use super::types::*;
-use std::path::PathBuf;
-use std::fs;
-use tauri::{command, AppHandle, Manager};
 use serde::{Deserialize, Serialize};
+use std::fs;
+use std::path::PathBuf;
+use tauri::{command, AppHandle, Manager};
 
 /// 视频库数据结构
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -100,7 +100,7 @@ pub fn get_supported_video_formats() -> Result<Vec<String>, String> {
     Ok(processor.get_supported_extensions())
 }
 
-/// 生成视频缩略图
+/// 生成视频缩略图（使用新的异步生成器）
 #[command]
 pub async fn generate_video_thumbnail(
     file_path: String,
@@ -109,20 +109,66 @@ pub async fn generate_video_thumbnail(
     height: u32,
     timestamp: Option<f64>,
 ) -> Result<(), String> {
-    use super::metadata::VideoMetadataExtractor;
+    use super::thumbnail::{AsyncThumbnailGenerator, ThumbnailConfig};
 
-    VideoMetadataExtractor::init().map_err(|e| format!("初始化FFmpeg失败: {}", e))?;
+    let config = ThumbnailConfig {
+        size: (width, height),
+        quality: 85,
+        timestamp_percent: timestamp.unwrap_or(0.1),
+        timeout_seconds: 30,
+        max_retries: 3,
+        fallback_enabled: true,
+    };
 
+    let generator = AsyncThumbnailGenerator::new(config);
     let input_path = PathBuf::from(file_path);
     let output_path = PathBuf::from(output_path);
 
-    VideoMetadataExtractor::generate_thumbnail(
-        &input_path,
-        &output_path,
-        (width, height),
-        timestamp,
-    )
-    .map_err(|e| format!("生成缩略图失败: {}", e))
+    generator
+        .generate_thumbnail(&input_path, &output_path)
+        .await
+        .map(|_| ())
+        .map_err(|e| format!("生成缩略图失败: {}", e))
+}
+
+/// 测试缩略图生成功能
+#[command]
+pub async fn test_thumbnail_generation(file_path: String) -> Result<String, String> {
+    use super::thumbnail::{AsyncThumbnailGenerator, ThumbnailConfig, ThumbnailStrategy};
+
+    let input_path = PathBuf::from(&file_path);
+    if !input_path.exists() {
+        return Err("文件不存在".to_string());
+    }
+
+    let config = ThumbnailConfig::default();
+    let mut generator = AsyncThumbnailGenerator::new(config);
+
+    // 创建测试输出路径
+    let output_path = PathBuf::from("test_thumbnail.jpg");
+
+    // 首先尝试FFmpeg策略
+    generator.set_strategy(ThumbnailStrategy::FFmpeg);
+    match generator
+        .generate_thumbnail(&input_path, &output_path)
+        .await
+    {
+        Ok(_) => Ok("FFmpeg缩略图生成成功".to_string()),
+        Err(e) => {
+            // 如果FFmpeg失败，尝试降级策略
+            generator.set_strategy(ThumbnailStrategy::Fallback);
+            match generator
+                .generate_thumbnail(&input_path, &output_path)
+                .await
+            {
+                Ok(_) => Ok(format!("FFmpeg失败但降级成功: {}", e)),
+                Err(fallback_err) => Err(format!(
+                    "所有策略都失败: FFmpeg: {}, Fallback: {}",
+                    e, fallback_err
+                )),
+            }
+        }
+    }
 }
 
 // 获取视频库文件路径
